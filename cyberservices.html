@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<!--
+  NET FILE: cyberservices.html
+  CyberCrowd Title: CyberServices
+  Purpose: Explain the CyberServices lane as the service-help side of CyberCrowd.
+  Owns: Service requests, helper lanes, proof-by-work, local/remote service matching, service status.
+  Does NOT own: Terms agreement, private identity authority, payment control, worker licensing claims, hidden tracking, or forced platform lock-in.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>CyberCrowd | CyberServices</title>
+
+  <style>
+    :root {
+      --bg: #070707;
+      --panel: #111111;
+      --panel-soft: #181818;
+      --paper: #f4efe3;
+      --ink: #191919;
+      --muted: #b9ad98;
+      --gold: #e7bc62;
+      --gold-soft: rgba(231, 188, 98, 0.14);
+      --green: #6ee7a8;
+      --red: #d94b4b;
+      --line: rgba(231, 188, 98, 0.32);
+      --shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
+      --radius: 22px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, rgba(231, 188, 98, 0.16), transparent 34rem),
+        radial-gradient(circle at bottom right, rgba(110, 231, 168, 0.10), transparent 32rem),
+        var(--bg);
+      color: var(--paper);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.5;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      width: min(1120px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 28px 0 60px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: var(--gold-soft);
+      box-shadow: var(--shadow);
+    }
+
+    .corner-note {
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      background: rgba(0, 0, 0, 0.28);
+    }
+
+    .hero {
+      padding: clamp(28px, 5vw, 60px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(135deg, rgba(17, 17, 17, 0.96), rgba(24, 24, 24, 0.88)),
+        var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "SERVICES";
+      position: absolute;
+      right: -22px;
+      bottom: -32px;
+      font-size: clamp(3rem, 10vw, 8rem);
+      font-weight: 900;
+      letter-spacing: -0.08em;
+      color: rgba(231, 188, 98, 0.055);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--green);
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 900px;
+      font-size: clamp(2.25rem, 7vw, 5.25rem);
+      line-height: 0.94;
+      letter-spacing: -0.06em;
+    }
+
+    .hero-copy {
+      max-width: 760px;
+      margin: 22px 0 0;
+      color: #eadfc9;
+      font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    .hero-chip {
+      padding: 14px;
+      border: 1px solid rgba(231, 188, 98, 0.24);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .hero-chip strong {
+      display: block;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+
+    .hero-chip span {
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 18px 0 0;
+    }
+
+    .nav a {
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--paper);
+      background: rgba(0, 0, 0, 0.24);
+      font-size: 0.92rem;
+    }
+
+    section {
+      margin-top: 18px;
+      padding: clamp(22px, 4vw, 38px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(17, 17, 17, 0.92);
+      box-shadow: var(--shadow);
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      color: var(--gold);
+      font-size: clamp(1.45rem, 3.2vw, 2.3rem);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      color: var(--paper);
+      font-size: 1.08rem;
+    }
+
+    p {
+      margin: 0 0 14px;
+      color: #e6dcc9;
+    }
+
+    .plain {
+      color: var(--muted);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .card {
+      padding: 18px;
+      border: 1px solid rgba(231, 188, 98, 0.22);
+      border-radius: 18px;
+      background: var(--panel-soft);
+    }
+
+    .card.gold {
+      background: var(--gold-soft);
+    }
+
+    .card.green {
+      border-color: rgba(110, 231, 168, 0.32);
+      background: rgba(110, 231, 168, 0.08);
+    }
+
+    .card.red {
+      border-color: rgba(217, 75, 75, 0.34);
+      background: rgba(217, 75, 75, 0.08);
+    }
+
+    .big-line {
+      margin: 0;
+      color: var(--paper);
+      font-size: clamp(1.28rem, 3vw, 2rem);
+      line-height: 1.18;
+      font-weight: 900;
+      letter-spacing: -0.035em;
+    }
+
+    .steps {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 54px 1fr;
+      gap: 14px;
+      align-items: start;
+      padding: 14px;
+      border: 1px solid rgba(231, 188, 98, 0.2);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .num {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: var(--ink);
+      background: var(--gold);
+      font-weight: 900;
+    }
+
+    .status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .stamp {
+      padding: 8px 10px;
+      border: 1px solid rgba(231, 188, 98, 0.34);
+      border-radius: 999px;
+      color: var(--paper);
+      background: rgba(0, 0, 0, 0.28);
+      font-size: 0.86rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .service-card {
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .service-top {
+      margin-bottom: 18px;
+    }
+
+    .service-tag {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      color: var(--ink);
+      background: var(--gold);
+      font-size: 0.75rem;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .service-bottom {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .quote {
+      margin: 0;
+      padding: 22px;
+      border-left: 5px solid var(--gold);
+      border-radius: 14px;
+      color: var(--paper);
+      background: rgba(231, 188, 98, 0.10);
+      font-size: clamp(1.15rem, 2.4vw, 1.55rem);
+      font-weight: 800;
+      line-height: 1.28;
+    }
+
+    .mini-list {
+      margin: 12px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .mini-list li {
+      margin: 8px 0;
+      padding-left: 24px;
+      position: relative;
+      color: #e7decf;
+    }
+
+    .mini-list li::before {
+      content: "•";
+      position: absolute;
+      left: 7px;
+      color: var(--gold);
+      font-weight: 900;
+    }
+
+    .flow {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .flow-row {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid rgba(231, 188, 98, 0.18);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .flow-label {
+      color: var(--gold);
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+    }
+
+    .footer {
+      margin-top: 18px;
+      padding: 22px;
+      color: var(--muted);
+      text-align: center;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(0, 0, 0, 0.28);
+    }
+
+    .print-note {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    @media (max-width: 820px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .hero-grid,
+      .grid-2,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .flow-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        color: #000;
+      }
+
+      .page {
+        width: 100%;
+        padding: 0;
+      }
+
+      .topbar,
+      .nav {
+        display: none;
+      }
+
+      .hero,
+      section,
+      .footer,
+      .card,
+      .step,
+      .flow-row {
+        break-inside: avoid;
+        box-shadow: none;
+        background: #fff;
+        color: #000;
+        border-color: #999;
+      }
+
+      h1,
+      h2,
+      h3,
+      p,
+      .plain,
+      .service-bottom,
+      .footer,
+      .mini-list li,
+      .flow-label {
+        color: #000;
+      }
+
+      .hero::after {
+        display: none;
+      }
+
+      section {
+        margin-top: 12px;
+        padding: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <header class="topbar">
+      <a class="brand" href="#">
+        <span class="brand-mark">W</span>
+        <span>CyberCrowd</span>
+      </a>
+
+      <div class="corner-note">
+        NET lane · readable service room · no separate JS
+      </div>
+    </header>
+
+    <section class="hero">
+      <p class="eyebrow">CyberServices</p>
+      <h1>Help should move like a door opening, not a hallway toll.</h1>
+
+      <p class="hero-copy">
+        CyberServices is the place where a person can ask for help, offer help,
+        prove the work, and keep the connection clean. It is not a trap. It is
+        not a forced marketplace. It is a service lane where the right helper,
+        the right job, the right proof, and the right status can meet.
+      </p>
+
+      <div class="hero-grid">
+        <div class="hero-chip">
+          <strong>Ask</strong>
+          <span>Someone needs help, a repair, a delivery, a setup, a check, or a service.</span>
+        </div>
+
+        <div class="hero-chip">
+          <strong>Match</strong>
+          <span>The service request routes toward the right lane, skill, location, or helper.</span>
+        </div>
+
+        <div class="hero-chip">
+          <strong>Prove</strong>
+          <span>The result becomes visible proof without turning the person into a walking wallet.</span>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="CyberServices sections">
+        <a href="#point">Point</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#service-types">Service Types</a>
+        <a href="#proof">Proof</a>
+        <a href="#status">Status</a>
+        <a href="#organs">Organs</a>
+        <a href="#clear">CLEAR</a>
+      </nav>
+    </section>
+
+    <section id="point">
+      <h2>The point</h2>
+
+      <p class="big-line">
+        CyberServices turns “Can somebody help me?” into a clean service path.
+      </p>
+
+      <p>
+        The old way makes people dig through apps, ads, phone numbers, fake
+        ratings, dead listings, and platforms that want to own the whole hallway.
+        CyberServices is different. It lets a service need become a signal, lets
+        the right person answer, and lets the completed work become proof.
+      </p>
+
+      <div class="grid-2">
+        <div class="card green">
+          <h3>Less control, more movement</h3>
+          <p>
+            CyberServices should act like a hat on the sidewalk waiting for
+            change. A person can be seen, helped, tipped, hired, called back,
+            or trusted because the work is real.
+          </p>
+        </div>
+
+        <div class="card gold">
+          <h3>One connected place</h3>
+          <p>
+            Identity, work, creativity, community, commerce, and opportunity
+            belong together. Services are not separate from the living résumé.
+            They are one more way a person proves what they can do.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="how-it-works">
+      <h2>How CyberServices works</h2>
+
+      <div class="steps">
+        <div class="step">
+          <div class="num">1</div>
+          <div>
+            <h3>Need appears</h3>
+            <p>
+              A person, shop, home, worker, customer, or local place has a need:
+              fix this, move this, check this, clean this, ship this, build this,
+              teach this, watch this, prove this.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="num">2</div>
+          <div>
+            <h3>Service signal forms</h3>
+            <p>
+              The request becomes a service signal with the useful facts:
+              what is needed, where it belongs, what proof is needed, who can
+              answer, and what must not be exposed.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="num">3</div>
+          <div>
+            <h3>CyberServices routes it</h3>
+            <p>
+              The service lane does not guess blindly. It routes by purpose:
+              local help, remote help, store help, home help, creative help,
+              repair help, proof help, or worker help.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="num">4</div>
+          <div>
+            <h3>Worker captures proof</h3>
+            <p>
+              The helper can capture the job with small working steps:
+              repeat, snap, next. The proof shows the work without making a
+              giant spiderweb of forms.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="num">5</div>
+          <div>
+            <h3>Status updates the world</h3>
+            <p>
+              Done, waiting, sold out, cannot hold, needs review, on the way,
+              accepted, declined, or cleared. The status keeps people from
+              wasting calls, trips, time, and trust.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="service-types">
+      <h2>Service types</h2>
+
+      <p>
+        CyberServices is not one job board. It is a service lane that can touch
+        many kinds of work without smashing them into one monster page.
+      </p>
+
+      <div class="grid-3">
+        <div class="card service-card">
+          <div class="service-top">
+            <span class="service-tag">Local</span>
+            <h3>Local help</h3>
+            <p>
+              Yard help, moving help, delivery help, store pickup, shelf checks,
+              small repairs, errands, and nearby service requests.
+            </p>
+          </div>
+          <div class="service-bottom">Best when location and timing matter.</div>
+        </div>
+
+        <div class="card service-card">
+          <div class="service-top">
+            <span class="service-tag">Skilled</span>
+            <h3>Trade help</h3>
+            <p>
+              Plumbing, electrical, carpentry, mechanic work, installation,
+              estimating, measuring, inspection, and before-after proof.
+            </p>
+          </div>
+          <div class="service-bottom">License claims stay separate and must be proven.</div>
+        </div>
+
+        <div class="card service-card">
+          <div class="service-top">
+            <span class="service-tag">Store</span>
+            <h3>Retail help</h3>
+            <p>
+              Inventory checks, item photos, price checks, quantity checks,
+              sold-out stamps, shelf proof, packaging, and shipping requests.
+            </p>
+          </div>
+          <div class="service-bottom">Stops dead calls and stale posts.</div>
+        </div>
+
+        <div class="card service-card">
+          <div class="service-top">
+            <span class="service-tag">Remote</span>
+            <h3>Remote help</h3>
+            <p>
+              Setup help, digital cleanup, posting help, design help, review,
+              tutoring, forms, planning, and service support from anywhere.
+            </p>
+          </div>
+          <div class="service-bottom">Best when the work can move without travel.</div>
+        </div>
+
+        <div class="card service-card">
+          <div class="service-top">
+            <span class="service-tag">Creative</span>
+            <h3>Creative help</h3>
+            <p>
+              Music, video, art, stream help, stage setup, promo help, editing,
+              voice, story, and public release support.
+            </p>
+          </div>
+          <div class="service-bottom">Creativity belongs beside work, not outside it.</div>
+        </div>
+
+        <div class="card service-card">
+          <div class="service-top">
+            <span class="service-tag">Proof</span>
+            <h3>Proof help</h3>
+            <p>
+              Before photos, after photos, voice notes, customer notes, worker
+              notes, receipts, timestamps, and clean completion records.
+            </p>
+          </div>
+          <div class="service-bottom">The work becomes the résumé.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="proof">
+      <h2>Proof, not fake shine</h2>
+
+      <p class="quote">
+        A person should not need a perfect sales pitch when the work itself can speak.
+      </p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>CyberServices proof can include</h3>
+          <ul class="mini-list">
+            <li>Before and after photos</li>
+            <li>Short worker notes</li>
+            <li>Customer confirmation</li>
+            <li>Time and location context when allowed</li>
+            <li>Service status history</li>
+            <li>Delivery or completion record</li>
+            <li>Repeat work and call-back history</li>
+          </ul>
+        </div>
+
+        <div class="card red">
+          <h3>CyberServices should not pretend</h3>
+          <ul class="mini-list">
+            <li>No fake authority</li>
+            <li>No hidden tracking</li>
+            <li>No forced identity exposure</li>
+            <li>No made-up licenses</li>
+            <li>No ratings that hide the real story</li>
+            <li>No locking the worker behind a platform wall</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="status">
+      <h2>Status keeps people from wasting time</h2>
+
+      <p>
+        Services need honest status. A customer should know whether help is
+        available, waiting, accepted, done, blocked, or no longer possible.
+        A worker should not be buried under repeat questions when the status
+        already answers the point.
+      </p>
+
+      <div class="status-row">
+        <span class="stamp">OPEN</span>
+        <span class="stamp">ACCEPTED</span>
+        <span class="stamp">ON THE WAY</span>
+        <span class="stamp">WAITING</span>
+        <span class="stamp">NEEDS REVIEW</span>
+        <span class="stamp">DONE</span>
+        <span class="stamp">CANNOT HOLD</span>
+        <span class="stamp">SOLD OUT</span>
+        <span class="stamp">CLEARED</span>
+      </div>
+
+      <div class="flow">
+        <div class="flow-row">
+          <div class="flow-label">Customer asks</div>
+          <div>“Can somebody help with this?”</div>
+        </div>
+
+        <div class="flow-row">
+          <div class="flow-label">System routes</div>
+          <div>CyberServices sends the need toward the right service lane.</div>
+        </div>
+
+        <div class="flow-row">
+          <div class="flow-label">Worker answers</div>
+          <div>The helper accepts, declines, asks for more proof, or marks the job blocked.</div>
+        </div>
+
+        <div class="flow-row">
+          <div class="flow-label">Proof lands</div>
+          <div>The completed result becomes useful proof, not noise.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="organs">
+      <h2>The organs in the service lane</h2>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Secretary</h3>
+          <p>
+            Keeps the lane clean. Orders the request, keeps the right facts
+            together, and prevents service chaos from becoming a junk drawer.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Biff</h3>
+          <p>
+            Asks the point. Is this service open, done, blocked, real, sold out,
+            not shippable, needs review, or ready to route?
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Octopus</h3>
+          <p>
+            Moves the signal. Routes service status to the right surface:
+            worker, customer, item card, local search, ping, proof, or archive.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Pepper</h3>
+          <p>
+            Watches the path and context. Pepper observes risk, odd movement,
+            repeated friction, or missing facts without taking authority.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="clear">
+      <h2>CLEAR keeps the trail from becoming a trap</h2>
+
+      <p>
+        CyberServices can use temporary operational pings to match, route,
+        prove, and clean up a service request. But temporary movement is not
+        the same as permanent identity.
+      </p>
+
+      <div class="grid-2">
+        <div class="card green">
+          <h3>What can remain</h3>
+          <p>
+            The completed result, proof, trust, service history, customer
+            confirmation, and résumé value can remain when they are meant to
+            be saved.
+          </p>
+        </div>
+
+        <div class="card red">
+          <h3>What can clear</h3>
+          <p>
+            Temporary pings, search logic, route trails, stale request noise,
+            and short-term matching data can clear when their job is done.
+          </p>
+        </div>
+      </div>
+
+      <p class="print-note">
+        CLEAR ends the trail. It does not destroy the value created by the work.
+      </p>
+    </section>
+
+    <section>
+      <h2>CyberServices in one sentence</h2>
+
+      <p class="big-line">
+        CyberServices lets people ask for help, answer with skill, prove the
+        work, update the status, and keep the connection better.
+      </p>
+    </section>
+
+    <footer class="footer">
+      CyberCrowd · CyberServices · one file, one lane, readable before clever.
+    </footer>
+  </main>
+</body>
+</html>
