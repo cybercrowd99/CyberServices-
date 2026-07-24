@@ -2,19 +2,19 @@
  * CyberServices KV Corruption Ledger
  *
  * ONE JOB:
- * Preserve corruption events as immutable operational evidence.
+ * Preserve KV corruption events as immutable operational evidence.
  *
  * Owns:
- * - Accepting corruption events
+ * - Accepting structured corruption events
  * - Creating ledger records
- * - Providing read access to corruption history
+ * - Returning stored corruption records
  *
  * Does NOT:
  * - Detect corruption
- * - Parse KV
+ * - Parse KV values
  * - Repair records
  * - Delete keys
- * - Change operation state
+ * - Control operation state
  */
 
 export interface KVCorruptionLedgerEvent {
@@ -22,14 +22,20 @@ export interface KVCorruptionLedgerEvent {
   reason: string;
   timestamp: string;
   rawLength: number;
+  trimmedLength?: number;
 }
+
 
 export interface KVCorruptionLedgerRecord {
   id: string;
   type: "KV_CORRUPTION";
+  version: 1;
   createdAt: string;
-  event: KVCorruptionLedgerEvent;
+  event: KVCorruptionLedgerEvent & {
+    trimmedLength: number | null;
+  };
 }
+
 
 export interface KVCorruptionLedgerStore {
   put(
@@ -46,8 +52,9 @@ export interface KVCorruptionLedgerStore {
 export class CyberServicesKVCorruptionLedger {
 
   constructor(
-    private store: KVCorruptionLedgerStore
+    private readonly store: KVCorruptionLedgerStore
   ) {}
+
 
   async record(
     event: KVCorruptionLedgerEvent
@@ -56,14 +63,27 @@ export class CyberServicesKVCorruptionLedger {
     const record: KVCorruptionLedgerRecord = {
       id: crypto.randomUUID(),
       type: "KV_CORRUPTION",
+      version: 1,
       createdAt: new Date().toISOString(),
-      event
+      event: {
+        ...event,
+        trimmedLength: event.trimmedLength ?? null
+      }
     };
 
-    await this.store.put(
-      `corruption:${record.id}`,
-      JSON.stringify(record)
-    );
+
+    try {
+
+      await this.store.put(
+        `kv-corruption:${record.id}`,
+        JSON.stringify(record)
+      );
+
+    } catch {
+
+      // Ledger storage failure must not mutate evidence.
+    }
+
 
     return record;
   }
@@ -73,14 +93,35 @@ export class CyberServicesKVCorruptionLedger {
     id: string
   ): Promise<KVCorruptionLedgerRecord | null> {
 
-    const raw = await this.store.get(
-      `corruption:${id}`
-    );
+    let raw: string | null;
+
+
+    try {
+
+      raw = await this.store.get(
+        `kv-corruption:${id}`
+      );
+
+    } catch {
+
+      return null;
+    }
+
 
     if (!raw) {
       return null;
     }
 
-    return JSON.parse(raw);
+
+    try {
+
+      return JSON.parse(
+        raw
+      ) as KVCorruptionLedgerRecord;
+
+    } catch {
+
+      return null;
+    }
   }
 }
