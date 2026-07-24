@@ -30,14 +30,18 @@ export interface KVCorruptionEvent {
 }
 
 export interface KVCorruptionLogger {
-  (event: KVCorruptionEvent): void | Promise<void>;
+  (
+    event: KVCorruptionEvent
+  ): void | Promise<void>;
 }
 
 export interface ReadKVJsonOptions<T> {
   namespace: KVNamespace;
   key: string;
   autoClear?: boolean;
-  validate?: (value: unknown) => value is T;
+  validate?: (
+    value: unknown
+  ) => value is T;
   logger?: KVCorruptionLogger;
 }
 
@@ -45,13 +49,28 @@ export async function readKVJson<T>(
   options: ReadKVJsonOptions<T>
 ): Promise<T | null> {
 
-  const raw = await options.namespace.get(options.key);
+  const raw = await options.namespace.get(
+    options.key
+  );
 
   if (raw === null) {
     return null;
   }
 
-  if (raw.trim() === "") {
+  if (typeof raw !== "string") {
+
+    await report(
+      options,
+      String(raw ?? ""),
+      "UNEXPECTED_TYPE"
+    );
+
+    return null;
+  }
+
+  const trimmed = raw.trim();
+
+  if (trimmed === "") {
 
     await report(
       options,
@@ -65,7 +84,9 @@ export async function readKVJson<T>(
   let parsed: unknown;
 
   try {
-    parsed = JSON.parse(raw);
+
+    parsed = JSON.parse(trimmed);
+
   } catch {
 
     await report(
@@ -98,7 +119,7 @@ async function report<T>(
   options: ReadKVJsonOptions<T>,
   raw: string,
   reason: KVCorruptionReason
-) {
+): Promise<void> {
 
   await options.logger?.({
     key: options.key,
@@ -108,6 +129,9 @@ async function report<T>(
   });
 
   if (options.autoClear) {
-    await options.namespace.delete(options.key);
+
+    await options.namespace.delete(
+      options.key
+    );
   }
 }
