@@ -22,11 +22,14 @@ export type KVCorruptionResponseState =
   | "RECORD_UNAVAILABLE"
   | "SAFE_CONTINUE";
 
+
 export interface KVCorruptionResponseInput {
   key: string;
   reason: string;
   timestamp: string;
+  state: KVCorruptionResponseState;
 }
+
 
 export interface KVCorruptionResponse {
   state: KVCorruptionResponseState;
@@ -43,7 +46,7 @@ export class CyberServicesKVCorruptionResponse {
   ): KVCorruptionResponse {
 
     return {
-      state: "CORRUPTION_DETECTED",
+      state: input.state,
       key: input.key,
       reason: input.reason,
       timestamp: input.timestamp
