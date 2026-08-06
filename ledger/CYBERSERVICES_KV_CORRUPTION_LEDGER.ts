@@ -1,6 +1,6 @@
 /**
  * CyberServices KV Corruption Ledger
- *
+ * 
  * ONE JOB:
  * Preserve KV corruption events as immutable operational evidence.
  *
