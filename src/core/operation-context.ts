@@ -2,7 +2,7 @@
  * ============================================================
  * CyberServices Operation Context
  * Deterministic Execution Context Envelope
- *
+ * 
  * ONE JOB:
  * Maintain the identity and state context of an operation
  * while it moves through the CyberServices execution pipeline.
