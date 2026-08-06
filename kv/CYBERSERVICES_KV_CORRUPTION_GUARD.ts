@@ -1,6 +1,6 @@
 /**
  * CyberServices KV Corruption Guard
- *
+ * 
  * ONE JOB:
  * Protect KV reads from corrupted records.
  *
