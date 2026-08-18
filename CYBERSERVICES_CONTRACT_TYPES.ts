@@ -1,20 +1,29 @@
 /**
- * CyberServices Contract Types
+ * CYBERCROWD — CYBERSERVICES
+ *
+ * PATH:
+ * CYBERSERVICES_CONTRACT_TYPES.ts
  *
  * ONE JOB:
- * Define stable data contracts shared between CyberServices layers.
+ * Define stable shared contract types for the CyberServices
+ * deterministic contract path.
  *
- * Owns:
- * - Contract interfaces
+ * OWNERSHIP:
  * - Contract version identifiers
- * - Shared contract shapes
+ * - Contract status identifiers
+ * - Contract identity shape
+ * - Contract envelope shape
+ * - Operation contract shape
+ * - Contract result shape
  *
- * Does NOT:
+ * THIS FILE MUST NEVER:
  * - Validate contracts
  * - Transform data
  * - Route requests
  * - Execute services
  * - Deploy systems
+ * - Generate timestamps
+ * - Create authority
  */
 
 export type CyberServicesContractVersion =
