@@ -41,16 +41,9 @@ import CyberServicesOperationExecutor
   from "../CYBERSERVICES_OPERATION_EXECUTOR";
 
 
-/**
- * Bootstrap the declared CyberServices lanes once
- * when the Worker module is initialized.
- */
 bootstrapCyberServicesLanes();
 
 
-/**
- * Shared stateless CyberServices operation executor.
- */
 const operationExecutor =
   new CyberServicesOperationExecutor();
 
@@ -66,9 +59,6 @@ export default {
       new URL(request.url);
 
 
-    /**
-     * Health / runtime visibility.
-     */
     if (
       request.method === "GET" &&
       (
@@ -94,9 +84,6 @@ export default {
     }
 
 
-    /**
-     * CS-1 execution boundary.
-     */
     if (
       request.method === "POST" &&
       url.pathname === "/execute"
@@ -109,16 +96,14 @@ export default {
       try {
 
         operation =
-          await request.json()
-            as CSOperationRequest;
+          (await request.json()) as CSOperationRequest;
 
       } catch {
 
         return Response.json(
           {
             success: false,
-            error:
-              "INVALID_JSON",
+            error: "INVALID_JSON",
           },
           {
             status: 400,
@@ -160,9 +145,6 @@ export default {
     }
 
 
-    /**
-     * CyberServices owns no undeclared routes.
-     */
     return Response.json(
       {
         system: "CyberServices",
