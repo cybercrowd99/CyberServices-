@@ -5,16 +5,11 @@
  * src/core/operation-state.ts
  *
  * ONE JOB:
- * Define and control valid deterministic CS-1 operation
- * lifecycle state transitions.
- *
- * OWNERSHIP:
- * - Operation lifecycle states
- * - Valid transition enforcement
- * - Caller-supplied transition timestamps
- * - Terminal-state detection
+ * Apply one valid deterministic CS-1 operation state transition.
  *
  * THIS FILE MUST NEVER:
+ * - Create initial operation state
+ * - Detect terminal state
  * - Execute operations
  * - Resolve lanes
  * - Create CyberSeals
@@ -35,12 +30,15 @@ export interface CSOperationState {
   operationId: string;
   status: CSOperationStatus;
   updatedAt: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 
 const VALID_TRANSITIONS:
-  Record<CSOperationStatus, CSOperationStatus[]> = {
+  Record<
+    CSOperationStatus,
+    readonly CSOperationStatus[]
+  > = {
 
   created: [
     "accepted",
@@ -63,61 +61,28 @@ const VALID_TRANSITIONS:
 };
 
 
-export class OperationStateController {
+export function transitionOperationState(
+  state: CSOperationState,
+  next: CSOperationStatus,
+  updatedAt: string
+): CSOperationState {
 
-  create(
-    operationId: string,
-    updatedAt: string
-  ): CSOperationState {
-
-    return {
-      operationId,
-      status: "created",
-      updatedAt,
-      metadata: {}
-    };
-  }
+  const allowed =
+    VALID_TRANSITIONS[
+      state.status
+    ].includes(next);
 
 
-  transition(
-    state: CSOperationState,
-    next: CSOperationStatus,
-    updatedAt: string
-  ): CSOperationState {
-
-    const allowed =
-      VALID_TRANSITIONS[state.status]
-        .includes(next);
-
-
-    if (!allowed) {
-
-      throw new Error(
-        `Invalid operation state transition: ${state.status} -> ${next}`
-      );
-    }
-
-
-    return {
-      ...state,
-      status: next,
-      updatedAt
-    };
-  }
-
-
-  isTerminal(
-    state: CSOperationState
-  ): boolean {
-
-    return (
-      state.status === "completed" ||
-      state.status === "failed"
+  if (!allowed) {
+    throw new Error(
+      `Invalid operation state transition: ${state.status} -> ${next}`
     );
   }
 
+
+  return {
+    ...state,
+    status: next,
+    updatedAt
+  };
 }
-
-
-export const operationState =
-  new OperationStateController();
