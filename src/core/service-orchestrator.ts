@@ -5,13 +5,8 @@
  * src/core/service-orchestrator.ts
  *
  * ONE JOB:
- * Coordinate a CyberServices operation by delegating execution
- * to the CyberServicesOperationExecutor.
- *
- * OWNERSHIP:
- * - Operational coordination
- * - Delegation to the operation executor
- * - CyberServices service-layer result metadata
+ * Delegate one CyberServices operation to the
+ * CyberServicesOperationExecutor and return the service-layer result.
  *
  * THIS FILE MUST NEVER:
  * - Define lanes
@@ -20,55 +15,37 @@
  * - Execute lane internals
  * - Create CyberSeals
  * - Manage external adapters
+ * - Own executor lifecycle
  * - Duplicate executor responsibilities
  */
 
 import type {
   CSOperationRequest,
-  CSServiceExecutionResult,
+  CSServiceExecutionResult
 } from "../protocol-spec";
 
 import CyberServicesOperationExecutor
   from "../../CYBERSERVICES_OPERATION_EXECUTOR";
 
 
-export class ServiceOrchestrator {
+export async function orchestrateServiceOperation(
+  request: CSOperationRequest
+): Promise<CSServiceExecutionResult> {
 
-  private readonly executor:
-    CyberServicesOperationExecutor;
+  const executor =
+    new CyberServicesOperationExecutor();
 
+  const result =
+    await executor.execute(
+      request
+    );
 
-  constructor(
-    executor:
-      CyberServicesOperationExecutor =
-        new CyberServicesOperationExecutor()
-  ) {
-    this.executor = executor;
-  }
+  return {
+    ...result,
 
-
-  async execute(
-    request: CSOperationRequest
-  ): Promise<CSServiceExecutionResult> {
-
-    const result =
-      await this.executor.execute(
-        request
-      );
-
-
-    return {
-      ...result,
-
-      resultMetadata: {
-        ...result.resultMetadata,
-        serviceLayer: "CyberServices"
-      }
-    };
-  }
-
+    resultMetadata: {
+      ...result.resultMetadata,
+      serviceLayer: "CyberServices"
+    }
+  };
 }
-
-
-export const serviceOrchestrator =
-  new ServiceOrchestrator();
