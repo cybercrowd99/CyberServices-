@@ -29,94 +29,74 @@
  */
 
 import type {
-  CSLane,
+  CSLane
 } from "../protocol-spec";
 
 import {
-  laneRegistry,
+  laneRegistry
 } from "./lane-registry";
 
 
-/**
- * CyberServices lanes currently declared by the
- * CyberServices architecture.
- */
 export const CYBERSERVICES_DECLARED_LANES:
   readonly CSLane[] = [
 
   {
     laneId: "identity",
-    laneType: "IDENTITY",
+    laneType: "IDENTITY"
   },
 
   {
     laneId: "supply-chain",
-    laneType: "SUPPLY_CHAIN",
+    laneType: "SUPPLY_CHAIN"
   },
 
   {
     laneId: "physical-shipping",
-    laneType: "PHYSICAL_SHIPPING",
+    laneType: "PHYSICAL_SHIPPING"
   },
 
   {
     laneId: "digital-assets",
-    laneType: "DIGITAL_ASSETS",
+    laneType: "DIGITAL_ASSETS"
   },
 
   {
     laneId: "qr",
-    laneType: "QR",
+    laneType: "QR"
   },
 
   {
     laneId: "mesh",
-    laneType: "MESH",
+    laneType: "MESH"
   },
 
   {
     laneId: "documents",
-    laneType: "DOCUMENTS",
+    laneType: "DOCUMENTS"
   },
 
   {
     laneId: "media",
-    laneType: "MEDIA",
-  },
+    laneType: "MEDIA"
+  }
 ];
 
 
-/**
- * Register the declared CyberServices lanes.
- *
- * Existing lanes are left intact so repeated bootstrap calls
- * do not create duplicate or conflicting registration behavior.
- */
-export function bootstrapCyberServicesLanes(): void {
+export function bootstrapCyberServicesLanes():
+  void {
 
   for (
     const lane of
     CYBERSERVICES_DECLARED_LANES
   ) {
 
-    if (
-      !laneRegistry.validateLane(
-        lane.laneId
-      )
-    ) {
-
-      laneRegistry.registerLane(
-        lane
-      );
-    }
+    laneRegistry.registerLane(
+      lane
+    );
   }
 }
 
 
-/**
- * Read the currently registered CyberServices lanes
- * without mutating the registry.
- */
 export function getBootstrappedCyberServicesLanes():
   CSLane[] {
 
