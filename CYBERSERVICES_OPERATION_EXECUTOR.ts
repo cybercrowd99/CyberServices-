@@ -32,17 +32,17 @@
 import type {
   CSOperationRequest,
   CSServiceExecutionResult,
-} from "./protocol-spec";
+} from "./src/protocol-spec";
 
 import {
   LaneExecutor,
-  default as laneExecutor,
-} from "./lanes/lane-executor";
+  laneExecutor,
+} from "./src/lanes/lane-executor";
 
 import {
   LaneResolver,
-  default as laneResolver,
-} from "./lanes/lane-resolver";
+  laneResolver,
+} from "./src/lanes/lane-resolver";
 
 /**
  * Execute an already-routed CyberServices operation.
