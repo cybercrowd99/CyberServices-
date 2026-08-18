@@ -1,20 +1,28 @@
 /**
- * CyberServices Contract Service Wrapper
+ * CYBERCROWD — CYBERSERVICES
+ *
+ * PATH:
+ * CYBERSERVICES_CONTRACT_SERVICE_WRAPPER.ts
  *
  * ONE JOB:
- * Wrap CyberServices operations in a stable contract-shaped service interface.
+ * Wrap an already-declared CS-1 operation request in the
+ * CyberServices contract service boundary.
  *
- * Owns:
- * - Accepting contract envelopes from upstream routing
- * - Invoking an injected CyberServices operation
- * - Returning contract-shaped results
+ * OWNERSHIP:
+ * - Accepting validated contract envelopes
+ * - Accepting already-declared CS-1 operation requests
+ * - Delegating execution to CyberServicesOperationExecutor
+ * - Returning contract-shaped execution results
  *
- * Does NOT:
- * - Validate contracts
+ * THIS FILE MUST NEVER:
  * - Adapt contract shapes
+ * - Validate contracts
  * - Route contracts
- * - Deploy systems
- * - Mutate original contract payloads
+ * - Invent lane IDs
+ * - Invent actor IDs
+ * - Build operation requests from incomplete data
+ * - Execute lane internals
+ * - Mutate the original contract
  */
 
 import type {
@@ -22,35 +30,55 @@ import type {
   CyberServicesContractResult
 } from "./CYBERSERVICES_CONTRACT_TYPES";
 
+import type {
+  CSOperationRequest,
+  CSServiceExecutionResult
+} from "./src/protocol-spec";
 
-export interface CyberServicesOperationExecutor {
-  execute<T>(
-    contract: CyberServicesContractEnvelope<T>
-  ): Promise<T>;
-}
+import CyberServicesOperationExecutor
+  from "./CYBERSERVICES_OPERATION_EXECUTOR";
 
 
 export class CyberServicesContractServiceWrapper {
 
   constructor(
-    private readonly executor: CyberServicesOperationExecutor
+    private readonly executor:
+      CyberServicesOperationExecutor =
+        new CyberServicesOperationExecutor()
   ) {}
 
 
   async handle<T>(
-    contract: CyberServicesContractEnvelope<T>
-  ): Promise<CyberServicesContractResult<T>> {
+    contract: CyberServicesContractEnvelope<T>,
+    request: CSOperationRequest
+  ): Promise<
+    CyberServicesContractResult<
+      CSServiceExecutionResult
+    >
+  > {
 
-    const resultPayload =
-      await this.executor.execute(contract);
+    const result =
+      await this.executor.execute(
+        request
+      );
 
 
     return {
       success: true,
 
       contract: {
-        ...contract,
-        payload: resultPayload
+        identity: {
+          ...contract.identity
+        },
+
+        status:
+          contract.status,
+
+        createdAt:
+          contract.createdAt,
+
+        payload:
+          result
       }
     };
   }
