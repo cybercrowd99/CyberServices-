@@ -1,29 +1,88 @@
 /**
- * ============================================================
- * CyberServices Lane Registry
- * Operational Lane Directory
+ * CYBERCROWD — CYBERSERVICES
+ *
+ * PATH:
+ * src/lanes/lane-registry.ts
  *
  * ONE JOB:
- * Maintain known CyberServices lanes and provide
- * deterministic lane lookup and validation.
- * ============================================================
+ * Maintain the declared CyberServices lane directory and provide
+ * deterministic lane registration, lookup, and validation.
+ *
+ * OWNERSHIP:
+ * - Lane registration
+ * - Lane lookup
+ * - Lane existence checks
+ * - Lane enumeration
+ *
+ * THIS FILE MUST NEVER:
+ * - Execute lane operations
+ * - Resolve operation requests
+ * - Invent lanes
+ * - Route contracts
+ * - Create authority
+ * - Authenticate identity
+ * - Authorize payments
+ * - Mutate MDC metadata
+ * - Write Ledger history
  */
 
-import { CSLane } from "../protocol-spec";
+import type {
+  CSLane
+} from "../protocol-spec";
 
 
 export class LaneRegistry {
 
-  private lanes: Map<string, CSLane> = new Map();
+  private readonly lanes:
+    Map<string, CSLane> =
+      new Map();
 
 
   registerLane(
     lane: CSLane
   ): void {
 
+    if (!lane.laneId) {
+      throw new Error(
+        "CyberServices laneId is required"
+      );
+    }
+
+
+    const existing =
+      this.lanes.get(
+        lane.laneId
+      );
+
+
+    if (existing) {
+
+      const sameLane =
+        existing.laneType ===
+          lane.laneType;
+
+
+      if (!sameLane) {
+
+        throw new Error(
+          `CyberServices lane conflict: ${lane.laneId}`
+        );
+      }
+
+
+      return;
+    }
+
+
     this.lanes.set(
       lane.laneId,
-      lane
+      {
+        ...lane,
+        metadata:
+          lane.metadata
+            ? { ...lane.metadata }
+            : undefined
+      }
     );
   }
 
@@ -32,7 +91,24 @@ export class LaneRegistry {
     laneId: string
   ): CSLane | null {
 
-    return this.lanes.get(laneId) ?? null;
+    const lane =
+      this.lanes.get(
+        laneId
+      );
+
+
+    if (!lane) {
+      return null;
+    }
+
+
+    return {
+      ...lane,
+      metadata:
+        lane.metadata
+          ? { ...lane.metadata }
+          : undefined
+    };
   }
 
 
@@ -40,15 +116,33 @@ export class LaneRegistry {
     laneId: string
   ): boolean {
 
-    return this.lanes.has(laneId);
+    return this.lanes.has(
+      laneId
+    );
   }
 
 
-  listLanes(): CSLane[] {
+  listLanes():
+    CSLane[] {
 
     return Array.from(
       this.lanes.values()
-    );
+    )
+      .map(
+        lane => ({
+          ...lane,
+          metadata:
+            lane.metadata
+              ? { ...lane.metadata }
+              : undefined
+        })
+      )
+      .sort(
+        (a, b) =>
+          a.laneId.localeCompare(
+            b.laneId
+          )
+      );
   }
 
 
@@ -56,7 +150,9 @@ export class LaneRegistry {
     laneId: string
   ): boolean {
 
-    return this.lanes.delete(laneId);
+    return this.lanes.delete(
+      laneId
+    );
   }
 
 
@@ -67,11 +163,5 @@ export class LaneRegistry {
 }
 
 
-/*
-   Default registry instance
-
-   The registry itself is intentionally empty.
-   Lanes are registered by the deployment layer.
-*/
-
-export const laneRegistry = new LaneRegistry();
+export const laneRegistry =
+  new LaneRegistry();
