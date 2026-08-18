@@ -1,46 +1,57 @@
 /**
- * ============================================================
- * CyberServices Operation Pipeline
- * Deterministic CS-1 Operational Flow Controller
- * 
- * ONE JOB:
- * Connect CS-1 request handling to the Service Orchestrator.
+ * CYBERCROWD — CYBERSERVICES
  *
- * Does NOT:
- * - define lanes
- * - resolve lanes directly
- * - execute lane logic
- * - create CyberSeals
- * - manage adapters
- * ============================================================
+ * PATH:
+ * src/core/operation-pipeline.ts
+ *
+ * ONE JOB:
+ * Connect a CS-1 operation request to the CyberServices
+ * ServiceOrchestrator.
+ *
+ * OWNERSHIP:
+ * - Operational pipeline handoff
+ * - Delegation to ServiceOrchestrator
+ * - Runtime pipeline entry point
+ *
+ * THIS FILE MUST NEVER:
+ * - Define lanes
+ * - Register lanes
+ * - Resolve lanes directly
+ * - Execute lane internals
+ * - Create CyberSeals
+ * - Manage external adapters
+ * - Duplicate orchestrator responsibilities
  */
 
-import {
-  CSOperationRequest
+import type {
+  CSOperationRequest,
+  CSServiceExecutionResult,
 } from "../protocol-spec";
 
 import {
   ServiceOrchestrator,
   serviceOrchestrator,
-  CSServiceExecutionResult
 } from "./service-orchestrator";
 
 
 export class OperationPipeline {
 
-  private orchestrator: ServiceOrchestrator;
+  private readonly orchestrator:
+    ServiceOrchestrator;
 
 
   constructor(
-    orchestrator: ServiceOrchestrator = serviceOrchestrator
+    orchestrator:
+      ServiceOrchestrator =
+        serviceOrchestrator
   ) {
     this.orchestrator = orchestrator;
   }
 
 
-  process(
+  async process(
     request: CSOperationRequest
-  ): CSServiceExecutionResult {
+  ): Promise<CSServiceExecutionResult> {
 
     return this.orchestrator.execute(
       request
@@ -49,12 +60,6 @@ export class OperationPipeline {
 
 }
 
-
-/*
-   Default pipeline instance
-
-   Runtime entry point for operational flow.
-*/
 
 export const operationPipeline =
   new OperationPipeline();
