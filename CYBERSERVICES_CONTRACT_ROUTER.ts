@@ -1,19 +1,27 @@
 /**
- * CyberServices Contract Router
+ * CYBERCROWD — CYBERSERVICES
+ *
+ * PATH:
+ * CYBERSERVICES_CONTRACT_ROUTER.ts
  *
  * ONE JOB:
- * Route validated contracts to their declared service destination.
+ * Route a validated CyberServices contract to its explicitly
+ * declared service destination.
  *
- * Owns:
- * - Mapping validated contract identity to route targets
+ * OWNERSHIP:
+ * - Reading the declared service identifier
+ * - Resolving declared service routes
  * - Returning deterministic route decisions
  *
- * Does NOT:
+ * THIS FILE MUST NEVER:
  * - Validate contracts
  * - Adapt contract shapes
  * - Execute services
  * - Deploy systems
  * - Modify contract payloads
+ * - Invent service names
+ * - Invent route targets
+ * - Create authority
  */
 
 import type {
@@ -36,26 +44,41 @@ export class CyberServicesContractRouter {
     serviceRoutes: Record<string, string>
   ): CyberServicesRouteResult {
 
+    const payload =
+      contract.payload;
+
+
     const service =
-      contract.payload &&
-      typeof contract.payload === "object" &&
-      "service" in contract.payload
-        ? String(
-            (contract.payload as Record<string, unknown>)
-              .service
-          )
+      payload !== null &&
+      typeof payload === "object" &&
+      "service" in payload &&
+      typeof (
+        payload as Record<string, unknown>
+      ).service === "string"
+        ? (
+            payload as Record<string, string>
+          ).service
         : "";
 
 
     const route =
-      serviceRoutes[service];
+      service
+        ? serviceRoutes[service]
+        : undefined;
 
 
     return {
-      routed: Boolean(route),
-      contractId: contract.identity.contractId,
+      routed:
+        typeof route === "string" &&
+        route.length > 0,
+
+      contractId:
+        contract.identity.contractId,
+
       service,
-      route: route ?? ""
+
+      route:
+        route ?? ""
     };
   }
 }
