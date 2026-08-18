@@ -5,13 +5,8 @@
  * src/core/operation-pipeline.ts
  *
  * ONE JOB:
- * Connect a CS-1 operation request to the CyberServices
- * ServiceOrchestrator.
- *
- * OWNERSHIP:
- * - Operational pipeline handoff
- * - Delegation to ServiceOrchestrator
- * - Runtime pipeline entry point
+ * Pass one CS-1 operation request into the CyberServices
+ * service-orchestration function.
  *
  * THIS FILE MUST NEVER:
  * - Define lanes
@@ -20,46 +15,25 @@
  * - Execute lane internals
  * - Create CyberSeals
  * - Manage external adapters
+ * - Own orchestrator lifecycle
  * - Duplicate orchestrator responsibilities
  */
 
 import type {
   CSOperationRequest,
-  CSServiceExecutionResult,
+  CSServiceExecutionResult
 } from "../protocol-spec";
 
 import {
-  ServiceOrchestrator,
-  serviceOrchestrator,
+  orchestrateServiceOperation
 } from "./service-orchestrator";
 
 
-export class OperationPipeline {
+export async function processOperation(
+  request: CSOperationRequest
+): Promise<CSServiceExecutionResult> {
 
-  private readonly orchestrator:
-    ServiceOrchestrator;
-
-
-  constructor(
-    orchestrator:
-      ServiceOrchestrator =
-        serviceOrchestrator
-  ) {
-    this.orchestrator = orchestrator;
-  }
-
-
-  async process(
-    request: CSOperationRequest
-  ): Promise<CSServiceExecutionResult> {
-
-    return this.orchestrator.execute(
-      request
-    );
-  }
-
+  return orchestrateServiceOperation(
+    request
+  );
 }
-
-
-export const operationPipeline =
-  new OperationPipeline();
