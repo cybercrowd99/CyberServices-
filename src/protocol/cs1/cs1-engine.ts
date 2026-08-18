@@ -37,12 +37,6 @@ import type {
 } from "../../protocol-spec";
 
 
-/**
- * Convert supported values into stable serialized form.
- *
- * Object keys are sorted so equivalent inputs always produce
- * equivalent fingerprints regardless of property insertion order.
- */
 function stableSerialize(
   value: unknown
 ): string {
@@ -88,7 +82,10 @@ function stableSerialize(
     return (
       "[" +
       value
-        .map(item => stableSerialize(item))
+        .map(
+          item =>
+            stableSerialize(item)
+        )
         .join(",") +
       "]"
     );
@@ -97,18 +94,24 @@ function stableSerialize(
   if (typeof value === "object") {
 
     const objectValue =
-      value as Record<string, unknown>;
+      value as Record<
+        string,
+        unknown
+      >;
 
     const keys =
-      Object.keys(objectValue)
-        .sort();
+      Object.keys(
+        objectValue
+      ).sort();
 
     return (
       "{" +
       keys
         .map(
           key =>
-            `${JSON.stringify(key)}:${stableSerialize(
+            `${JSON.stringify(
+              key
+            )}:${stableSerialize(
               objectValue[key]
             )}`
         )
@@ -117,22 +120,20 @@ function stableSerialize(
     );
   }
 
-  return JSON.stringify(String(value));
+  return JSON.stringify(
+    String(value)
+  );
 }
 
 
-/**
- * Small deterministic fingerprint function.
- *
- * This is used for CS-1 deterministic continuity identity.
- * It is not payment authorization and does not create authority.
- */
 function deterministicFingerprint(
   value: unknown
 ): string {
 
   const input =
-    stableSerialize(value);
+    stableSerialize(
+      value
+    );
 
   let hashA =
     0x811c9dc5;
@@ -148,7 +149,10 @@ function deterministicFingerprint(
   ) {
 
     const code =
-      input.charCodeAt(index);
+      input.charCodeAt(
+        index
+      );
+
 
     hashA ^=
       code;
@@ -186,17 +190,16 @@ function deterministicFingerprint(
 }
 
 
-/**
- * CS-1 does not generate time.
- *
- * Time must enter the engine as declared operation metadata.
- */
 function getDeclaredTimestamp(
-  metadata: Record<string, any>
+  metadata: Record<
+    string,
+    unknown
+  >
 ): string | null {
 
   if (
-    typeof metadata.timestamp === "string" &&
+    typeof metadata.timestamp ===
+      "string" &&
     metadata.timestamp.length > 0
   ) {
     return metadata.timestamp;
@@ -204,7 +207,8 @@ function getDeclaredTimestamp(
 
 
   if (
-    typeof metadata.createdAt === "string" &&
+    typeof metadata.createdAt ===
+      "string" &&
     metadata.createdAt.length > 0
   ) {
     return metadata.createdAt;
@@ -212,6 +216,24 @@ function getDeclaredTimestamp(
 
 
   return null;
+}
+
+
+function copySealRefs(
+  seals:
+    readonly CSSealRef[] | undefined
+): CSSealRef[] {
+
+  return (
+    seals ?? []
+  ).map(
+    seal => ({
+      sealId:
+        seal.sealId,
+      hash:
+        seal.hash
+    })
+  );
 }
 
 
@@ -224,15 +246,22 @@ class SealEngine {
       actorId: string;
       timestamp: string;
       payload: unknown;
-      metadata: Record<string, any>;
-      upstreamSeals?: CSSealRef[];
+      metadata:
+        Record<string, unknown>;
+      upstreamSeals?:
+        CSSealRef[];
     }
   ): CSSeal {
 
-    const metadataBinding =
-      {
-        ...input.metadata
-      };
+    const metadataBinding = {
+      ...input.metadata
+    };
+
+
+    const upstreamSeals =
+      copySealRefs(
+        input.upstreamSeals
+      );
 
 
     const payloadFingerprint =
@@ -258,8 +287,7 @@ class SealEngine {
 
       payloadFingerprint,
 
-      upstreamSeals:
-        input.upstreamSeals ?? []
+      upstreamSeals
     };
 
 
@@ -275,6 +303,7 @@ class SealEngine {
 
     return {
       sealId,
+
       operationId:
         input.operationId,
 
@@ -293,8 +322,7 @@ class SealEngine {
 
       payloadFingerprint,
 
-      upstreamSeals:
-        input.upstreamSeals ?? []
+      upstreamSeals
     };
   }
 }
@@ -321,14 +349,32 @@ export class CS1Engine {
     }
 
 
-    const metadata =
-      request.metadata ?? {};
+    const metadata:
+      Record<string, unknown> = {
+        ...(request.metadata ?? {})
+      };
 
 
     const timestamp =
       getDeclaredTimestamp(
         metadata
-      ) as string;
+      );
+
+
+    if (!timestamp) {
+
+      return this.validationError(
+        request.laneId,
+        request.operationId,
+        "Missing deterministic timestamp in metadata.timestamp or metadata.createdAt"
+      );
+    }
+
+
+    const upstreamSeals =
+      copySealRefs(
+        request.upstreamSeals
+      );
 
 
     const seal =
@@ -349,8 +395,7 @@ export class CS1Engine {
 
         metadata,
 
-        upstreamSeals:
-          request.upstreamSeals
+        upstreamSeals
       });
 
 
@@ -368,14 +413,16 @@ export class CS1Engine {
         request.payload,
 
       resultMetadata: {
-        protocol: "CS-1",
-        processed: true
+        protocol:
+          "CS-1",
+        processed:
+          true
       },
 
       seal,
 
       continuityChain: [
-        ...(request.upstreamSeals ?? []),
+        ...upstreamSeals,
 
         {
           sealId:
@@ -423,8 +470,10 @@ export class CS1Engine {
     }
 
 
-    const metadata =
-      request.metadata ?? {};
+    const metadata:
+      Record<string, unknown> = {
+        ...(request.metadata ?? {})
+      };
 
 
     if (
@@ -455,7 +504,8 @@ export class CS1Engine {
       `cs1-error-${deterministicFingerprint({
         laneId,
         operationIdentity,
-        type: "validation",
+        type:
+          "validation",
         message
       })}`;
 
@@ -463,7 +513,8 @@ export class CS1Engine {
     return {
       errorId,
       laneId,
-      type: "validation",
+      type:
+        "validation",
       message
     };
   }
