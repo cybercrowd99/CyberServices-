@@ -5,16 +5,11 @@
  * src/core/operation-context.ts
  *
  * ONE JOB:
- * Maintain the deterministic identity and execution context
- * of a CyberServices operation.
- *
- * OWNERSHIP:
- * - Operation identity context
- * - Caller-supplied creation timestamp
- * - Operation metadata envelope
- * - Context validation
+ * Create the deterministic context for one CyberServices operation.
  *
  * THIS FILE MUST NEVER:
+ * - Update metadata
+ * - Validate context
  * - Execute operations
  * - Resolve lanes
  * - Create CyberSeals
@@ -28,66 +23,27 @@ export interface CSOperationContextInput {
   laneId: string;
   actorId: string;
   createdAt: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
-
 
 export interface CSOperationContext {
   operationId: string;
   laneId: string;
   actorId: string;
   createdAt: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
-
-export class OperationContext {
-
-  create(
-    input: CSOperationContextInput
-  ): CSOperationContext {
-
-    return {
-      operationId: input.operationId,
-      laneId: input.laneId,
-      actorId: input.actorId,
-      createdAt: input.createdAt,
-      metadata:
-        input.metadata ?? {}
-    };
-  }
-
-
-  updateMetadata(
-    context: CSOperationContext,
-    metadata: Record<string, any>
-  ): CSOperationContext {
-
-    return {
-      ...context,
-
-      metadata: {
-        ...context.metadata,
-        ...metadata
-      }
-    };
-  }
-
-
-  validate(
-    context: CSOperationContext
-  ): boolean {
-
-    return Boolean(
-      context.operationId &&
-      context.laneId &&
-      context.actorId &&
-      context.createdAt
-    );
-  }
-
+export function createOperationContext(
+  input: CSOperationContextInput
+): CSOperationContext {
+  return {
+    operationId: input.operationId,
+    laneId: input.laneId,
+    actorId: input.actorId,
+    createdAt: input.createdAt,
+    metadata: {
+      ...(input.metadata ?? {})
+    }
+  };
 }
-
-
-export const operationContext =
-  new OperationContext();
