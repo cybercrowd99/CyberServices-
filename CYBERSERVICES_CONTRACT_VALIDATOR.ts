@@ -1,20 +1,26 @@
 /**
- * CyberServices Contract Validator
+ * CYBERCROWD — CYBERSERVICES
+ *
+ * PATH:
+ * CYBERSERVICES_CONTRACT_VALIDATOR.ts
  *
  * ONE JOB:
- * Determine whether a CyberServices contract envelope satisfies contract rules.
+ * Determine whether a CyberServices contract envelope satisfies
+ * the declared CS-1 contract rules.
  *
- * Owns:
- * - Checking required contract fields
- * - Checking contract version compatibility
- * - Returning validation results
+ * OWNERSHIP:
+ * - Required contract field checks
+ * - Supported contract version checks
+ * - Contract status checks
+ * - Deterministic validation result return
  *
- * Does NOT:
+ * THIS FILE MUST NEVER:
  * - Adapt external input
  * - Route contracts
  * - Execute services
  * - Deploy contracts
  * - Mutate contract data
+ * - Invent contract authority
  */
 
 import type {
@@ -36,6 +42,12 @@ export interface CyberServicesContractValidationResult {
 }
 
 
+const SUPPORTED_VERSIONS:
+  readonly CyberServicesContractVersion[] = [
+    "CS-1"
+  ];
+
+
 export class CyberServicesContractValidator {
 
   validate<T>(
@@ -44,31 +56,75 @@ export class CyberServicesContractValidator {
 
     const reasons: string[] = [];
 
-    if (!contract.identity.contractId) {
-      reasons.push("MISSING_CONTRACT_ID");
+
+    if (
+      !contract.identity ||
+      !contract.identity.contractId
+    ) {
+      reasons.push(
+        "MISSING_CONTRACT_ID"
+      );
     }
 
-    if (!contract.identity.version) {
-      reasons.push("MISSING_VERSION");
+
+    if (
+      !contract.identity ||
+      !contract.identity.version
+    ) {
+      reasons.push(
+        "MISSING_VERSION"
+      );
     }
+
+
+    if (
+      contract.identity?.version &&
+      !SUPPORTED_VERSIONS.includes(
+        contract.identity.version
+      )
+    ) {
+      reasons.push(
+        "UNSUPPORTED_VERSION"
+      );
+    }
+
 
     if (!contract.createdAt) {
-      reasons.push("MISSING_CREATED_AT");
+      reasons.push(
+        "MISSING_CREATED_AT"
+      );
     }
 
-    if (contract.payload === undefined) {
-      reasons.push("MISSING_PAYLOAD");
+
+    if (
+      contract.status !== "ACTIVE"
+    ) {
+      reasons.push(
+        "CONTRACT_NOT_ACTIVE"
+      );
+    }
+
+
+    if (
+      contract.payload === undefined
+    ) {
+      reasons.push(
+        "MISSING_PAYLOAD"
+      );
     }
 
 
     return {
-      status: reasons.length === 0
-        ? "VALID"
-        : "INVALID",
+      status:
+        reasons.length === 0
+          ? "VALID"
+          : "INVALID",
 
-      contractId: contract.identity.contractId,
+      contractId:
+        contract.identity?.contractId ?? "",
 
-      version: contract.identity.version,
+      version:
+        contract.identity?.version ?? "",
 
       reasons
     };
