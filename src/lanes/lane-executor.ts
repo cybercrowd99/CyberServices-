@@ -1,20 +1,32 @@
 /**
- * ============================================================
- * CyberServices Lane Executor
- * Deterministic Lane Execution Boundary
+ * CYBERCROWD — CYBERSERVICES
+ *
+ * PATH:
+ * src/lanes/lane-executor.ts
  *
  * ONE JOB:
- * Execute an operation against an already-resolved CSLane.
+ * Execute an operation against an already-resolved
+ * CyberServices lane.
  *
- * Does NOT:
- * - discover lanes
- * - register lanes
- * - create CyberSeals
- * - manage external adapters
- * ============================================================
+ * OWNERSHIP:
+ * - Resolved-lane execution boundary
+ * - Payload handoff
+ * - Lane execution metadata return
+ *
+ * THIS FILE MUST NEVER:
+ * - Discover lanes
+ * - Register lanes
+ * - Resolve lanes
+ * - Create CyberSeals
+ * - Manage external adapters
+ * - Invent operation authority
+ * - Authenticate identity
+ * - Authorize payments
+ * - Mutate MDC metadata
+ * - Write Ledger history
  */
 
-import {
+import type {
   CSLane
 } from "../protocol-spec";
 
@@ -22,42 +34,43 @@ import {
 export interface CSLaneExecutionRequest {
   lane: CSLane;
   payload: unknown;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 
 export interface CSLaneExecutionResult {
   laneId: string;
   resultPayload: unknown;
-  resultMetadata: Record<string, any>;
+  resultMetadata: Record<string, unknown>;
 }
 
 
 export class LaneExecutor {
-
 
   execute(
     request: CSLaneExecutionRequest
   ): CSLaneExecutionResult {
 
     return {
-      laneId: request.lane.laneId,
+      laneId:
+        request.lane.laneId,
 
-      resultPayload: request.payload,
+      resultPayload:
+        request.payload,
 
       resultMetadata: {
-        laneType: request.lane.laneType,
-        executed: true,
-        protocol: "CS-1"
+        ...(request.metadata ?? {}),
+        laneType:
+          request.lane.laneType,
+        executed:
+          true,
+        protocol:
+          "CS-1"
       }
     };
   }
-
 }
 
 
-/*
-   Default stateless executor instance
-*/
-
-export const laneExecutor = new LaneExecutor();
+export const laneExecutor =
+  new LaneExecutor();
