@@ -1,19 +1,27 @@
 /**
- * ============================================================
- * CyberServices Operation State
- * Deterministic CS-1 Lifecycle State Controller
+ * CYBERCROWD — CYBERSERVICES
+ *
+ * PATH:
+ * src/core/operation-state.ts
  *
  * ONE JOB:
- * Define and control valid operation lifecycle states.
+ * Define and control valid deterministic CS-1 operation
+ * lifecycle state transitions.
  *
- * Does NOT:
- * - execute operations
- * - resolve lanes
- * - create CyberSeals
- * - store MDC records
- * ============================================================
+ * OWNERSHIP:
+ * - Operation lifecycle states
+ * - Valid transition enforcement
+ * - Caller-supplied transition timestamps
+ * - Terminal-state detection
+ *
+ * THIS FILE MUST NEVER:
+ * - Execute operations
+ * - Resolve lanes
+ * - Create CyberSeals
+ * - Store MDC records
+ * - Generate timestamps internally
+ * - Invent lifecycle transitions
  */
-
 
 export type CSOperationStatus =
   | "created"
@@ -24,13 +32,9 @@ export type CSOperationStatus =
 
 
 export interface CSOperationState {
-
   operationId: string;
-
   status: CSOperationStatus;
-
   updatedAt: string;
-
   metadata: Record<string, any>;
 }
 
@@ -61,19 +65,15 @@ const VALID_TRANSITIONS:
 
 export class OperationStateController {
 
-
   create(
-    operationId: string
+    operationId: string,
+    updatedAt: string
   ): CSOperationState {
 
     return {
       operationId,
-
       status: "created",
-
-      updatedAt:
-        new Date().toISOString(),
-
+      updatedAt,
       metadata: {}
     };
   }
@@ -81,7 +81,8 @@ export class OperationStateController {
 
   transition(
     state: CSOperationState,
-    next: CSOperationStatus
+    next: CSOperationStatus,
+    updatedAt: string
   ): CSOperationState {
 
     const allowed =
@@ -98,13 +99,9 @@ export class OperationStateController {
 
 
     return {
-
       ...state,
-
       status: next,
-
-      updatedAt:
-        new Date().toISOString()
+      updatedAt
     };
   }
 
@@ -121,10 +118,6 @@ export class OperationStateController {
 
 }
 
-
-/*
-   Default state controller instance
-*/
 
 export const operationState =
   new OperationStateController();
