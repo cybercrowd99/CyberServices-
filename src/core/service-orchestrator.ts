@@ -1,83 +1,64 @@
 /**
- * ============================================================
- * CyberServices Service Orchestrator
- * Deterministic Operational Coordination Layer
+ * CYBERCROWD — CYBERSERVICES
+ *
+ * PATH:
+ * src/core/service-orchestrator.ts
  *
  * ONE JOB:
- * Coordinate a CyberServices operation from request
- * to resolved lane execution.
+ * Coordinate a CyberServices operation by delegating execution
+ * to the CyberServicesOperationExecutor.
  *
- * Does NOT:
- * - define lanes
- * - register lanes
- * - execute lane internals
- * - create CyberSeals
- * - manage external adapters
- * ============================================================
+ * OWNERSHIP:
+ * - Operational coordination
+ * - Delegation to the operation executor
+ * - CyberServices service-layer result metadata
+ *
+ * THIS FILE MUST NEVER:
+ * - Define lanes
+ * - Register lanes
+ * - Resolve lanes directly
+ * - Execute lane internals
+ * - Create CyberSeals
+ * - Manage external adapters
+ * - Duplicate executor responsibilities
  */
 
-import {
-  CSOperationRequest
+import type {
+  CSOperationRequest,
+  CSServiceExecutionResult,
 } from "../protocol-spec";
 
-import {
-  LaneResolver,
-  laneResolver
-} from "../lanes/lane-resolver";
-
-import {
-  LaneExecutor,
-  laneExecutor
-} from "../lanes/lane-executor";
-
-
-export interface CSServiceExecutionResult {
-  operationId: string;
-  laneId: string;
-  resultPayload: unknown;
-  resultMetadata: Record<string, any>;
-}
+import CyberServicesOperationExecutor
+  from "../../CYBERSERVICES_OPERATION_EXECUTOR";
 
 
 export class ServiceOrchestrator {
 
-  private resolver: LaneResolver;
-  private executor: LaneExecutor;
+  private readonly executor:
+    CyberServicesOperationExecutor;
 
 
   constructor(
-    resolver: LaneResolver = laneResolver,
-    executor: LaneExecutor = laneExecutor
+    executor:
+      CyberServicesOperationExecutor =
+        new CyberServicesOperationExecutor()
   ) {
-    this.resolver = resolver;
     this.executor = executor;
   }
 
 
-  execute(
+  async execute(
     request: CSOperationRequest
-  ): CSServiceExecutionResult {
+  ): Promise<CSServiceExecutionResult> {
 
-    const lane =
-      this.resolver.requireLane(
-        request.laneId
+    const result =
+      await this.executor.execute(
+        request
       );
 
 
-    const result =
-      this.executor.execute({
-        lane,
-        payload: request.payload,
-        metadata: request.metadata
-      });
-
-
     return {
-      operationId: request.operationId,
-      laneId: result.laneId,
-
-      resultPayload:
-        result.resultPayload,
+      ...result,
 
       resultMetadata: {
         ...result.resultMetadata,
@@ -88,10 +69,6 @@ export class ServiceOrchestrator {
 
 }
 
-
-/*
-   Default orchestrator instance
-*/
 
 export const serviceOrchestrator =
   new ServiceOrchestrator();
