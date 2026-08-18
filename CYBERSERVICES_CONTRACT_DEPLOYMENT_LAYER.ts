@@ -25,6 +25,7 @@
  * - Execute lane internals
  * - Modify payloads
  * - Create authority
+ * - Generate timestamps internally
  */
 
 import type {
@@ -92,6 +93,7 @@ export class CyberServicesContractDeploymentLayer {
       contractId: string;
       version: string;
       payload: T;
+      createdAt: string;
       routes: Record<string, string>;
       operation: CSOperationRequest;
     }
@@ -110,7 +112,10 @@ export class CyberServicesContractDeploymentLayer {
           input.version,
 
         payload:
-          input.payload
+          input.payload,
+
+        createdAt:
+          input.createdAt
       });
 
 
