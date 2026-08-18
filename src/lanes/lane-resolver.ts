@@ -1,25 +1,56 @@
 /**
- * ============================================================
- * CyberServices Lane Resolver
- * Deterministic Lane Resolution Layer
+ * CYBERCROWD — CYBERSERVICES
+ *
+ * PATH:
+ * src/lanes/lane-resolver.ts
  *
  * ONE JOB:
- * Resolve a lane request into a registered CSLane definition.
- * ============================================================
+ * Resolve a declared CyberServices lane identifier into
+ * a registered CSLane definition.
+ *
+ * OWNERSHIP:
+ * - Lane lookup
+ * - Lane existence checks
+ * - Required-lane enforcement
+ *
+ * THIS FILE MUST NEVER:
+ * - Register lanes
+ * - Execute lane operations
+ * - Invent lane IDs
+ * - Route contracts
+ * - Create authority
+ * - Authenticate identity
+ * - Authorize payments
+ * - Mutate MDC metadata
+ * - Write Ledger history
  */
 
-import { CSLane } from "../protocol-spec";
-import { laneRegistry } from "./lane-registry";
+import type {
+  CSLane
+} from "../protocol-spec";
+
+import {
+  LaneRegistry,
+  laneRegistry
+} from "./lane-registry";
 
 
 export class LaneResolver {
+
+  constructor(
+    private readonly registry:
+      LaneRegistry =
+        laneRegistry
+  ) {}
 
 
   resolve(
     laneId: string
   ): CSLane | null {
 
-    return laneRegistry.getLane(laneId);
+    return this.registry.getLane(
+      laneId
+    );
   }
 
 
@@ -27,7 +58,9 @@ export class LaneResolver {
     laneId: string
   ): boolean {
 
-    return laneRegistry.validateLane(laneId);
+    return this.registry.validateLane(
+      laneId
+    );
   }
 
 
@@ -35,24 +68,24 @@ export class LaneResolver {
     laneId: string
   ): CSLane {
 
-    const lane = this.resolve(laneId);
+    const lane =
+      this.resolve(
+        laneId
+      );
+
 
     if (!lane) {
+
       throw new Error(
         `CyberServices lane not found: ${laneId}`
       );
     }
 
+
     return lane;
   }
-
 }
 
 
-/*
-   Default resolver instance
-
-   Stateless resolver using the shared lane registry.
-*/
-
-export const laneResolver = new LaneResolver();
+export const laneResolver =
+  new LaneResolver();
